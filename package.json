@@ -30,6 +30,8 @@
   },
   "homepage": "https://github.com/srob/homebridge-sensehat#readme",
   "dependencies": {
-    "hap-nodejs-community-types": "https://github.com/homespun/hap-nodejs-community-types.git"
+    "color-convert": "^1.9.2",
+    "hap-nodejs-community-types": "https://github.com/homespun/hap-nodejs-community-types.git",
+    "node-sense-hat": "0.0.2"
   }
 }

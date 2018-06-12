@@ -1,6 +1,10 @@
 'use strict';
 
 const exec = require('child_process').exec;
+const matrix = require('node-sense-hat').Leds;
+const convert = require('color-convert');
+const Imu = require('node-sense-hat').Imu;
+const imu = new Imu.IMU();
 
 let Service, Characteristic;
 let temperature, humidity, pressure;
@@ -82,7 +86,7 @@ class SenseHatPlugin {
         this.readSensors();
 
         setInterval(this.readSensors, sensors_interval);
-        setInterval(this.setLeds, led_interval);
+        // setInterval(this.setLeds, led_interval);
     }
 
     readSensors() {
@@ -101,40 +105,37 @@ class SenseHatPlugin {
         });
     }
 
-    setLeds() {
+    setLeds(cb = () => {}) {
         console.log(hue, saturation, brightness, power);
-        var cmdLine = "python " + script_path + "leds.py " +
-            hue + " " + saturation + " " + brightness + " " + power;
-        exec(cmdLine, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return;
-            }
-        });
+        if (power != 0) {
+            matrix.clear(convert.hsv.rgb(hue, saturation, brightness), cb);
+        } else {
+            matrix.clear(0, 0, 0, cb);
+        }
     }
 
     setPowerState(state, cb) {
         power = state ? 1 : 0;
-        cb(null, power);
+        this.setLeds(() => cb(null, power));
     }
 
     getPowerState(cb) {
-        cb(null, power);
+        this.setLeds(() => cb(null, power));
     }
 
     setHue(level, cb) {
         hue = level;
-        cb(null, hue);
+        this.setLeds(() => cb(null, hue));
     }
 
     setSaturation(level, cb) {
         saturation = level;
-        cb(null, saturation);
+        this.setLeds(() => cb(null, saturation));
     }
 
     setBrightness(level, cb) {
         brightness = level;
-        cb(null, brightness);
+        this.setLeds(() => cb(null, brightness));
     }
 
     getHue(cb) {

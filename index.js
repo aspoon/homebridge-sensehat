@@ -1,16 +1,16 @@
 'use strict';
 
 const exec = require('child_process').exec;
-const matrix = require('node-sense-hat').Leds;
+const fs = require('fs');
+const matrix = require('sense-hat-led');
 const convert = require('color-convert');
-const Imu = require('node-sense-hat').Imu;
-const imu = new Imu.IMU();
+const imu = new (require('nodeimu').IMU)();
 
 let Service, Characteristic;
 let temperature, humidity, pressure;
 let CommunityTypes;
 let hue, saturation, brightness, power;
-let script_path, led_interval, sensors_interval
+let cputemp_path, led_interval, sensors_interval
 
 module.exports = (homebridge) => {
     Service = homebridge.hap.Service;
@@ -26,7 +26,7 @@ class SenseHatPlugin {
         this.name_temperature = config.name_temperature || this.name;
         this.name_humidity = config.name_humidity || this.name;
         this.name_presure = config.name_pressure || this.name;
-        script_path = config.script_path || "/home/pi/homebridge-sensehat/";
+        cputemp_path = config.cputemp_path || "/sys/class/thermal/thermal_zone0/temp";
         led_interval = config.led_interval || 2;
         sensors_interval = config.sensors_interval || 10;
 
@@ -89,24 +89,16 @@ class SenseHatPlugin {
         // setInterval(this.setLeds, led_interval);
     }
 
-    readSensors() {
-        var cmdLine = "python " + script_path + "sensors.py";
-        exec(cmdLine, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return;
-            }
-            var values = `${stdout}`.split(" ");
-
-            temperature = parseFloat(values[0]);
-            humidity = parseFloat(values[1]);
-            pressure = parseFloat(values[2]);
-            console.log(temperature, humidity, pressure);
-        });
+    readSensors(cb = () => {}) {
+        var cpuTemp = fs.readFileSync(cputemp_path) / 1000;
+        var data = imu.getValueSync();
+        temperature = data.temperature - (cpuTemp - data.temperature) / 1.3;
+        humidity = data.humidity;
+        pressure = data.pressure;
+        cb();
     }
 
     setLeds(cb = () => {}) {
-        console.log(hue, saturation, brightness, power);
         if (power != 0) {
             matrix.clear(convert.hsv.rgb(hue, saturation, brightness), cb);
         } else {

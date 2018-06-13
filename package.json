@@ -32,6 +32,7 @@
   "dependencies": {
     "color-convert": "^1.9.2",
     "hap-nodejs-community-types": "https://github.com/homespun/hap-nodejs-community-types.git",
-    "node-sense-hat": "0.0.2"
+    "nodeimu": "^2.1.9",
+    "sense-hat-led": "^1.0.1"
   }
 }

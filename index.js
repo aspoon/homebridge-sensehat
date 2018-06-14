@@ -92,7 +92,9 @@ class SenseHatPlugin {
     readSensors(cb = () => {}) {
         var cpuTemp = fs.readFileSync(cputemp_path) / 1000;
         var data = imu.getValueSync();
-        temperature = data.temperature - (cpuTemp - data.temperature) / 1.3;
+        // temperature = data.temperature - (cpuTemp - data.temperature) / 1.3;
+        var c = 0.45;
+        temperature = (data.temperature - (c * cpuTemp)) / (1 - c);
         humidity = data.humidity;
         pressure = data.pressure;
         cb();
